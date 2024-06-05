@@ -1,84 +1,58 @@
-<!doctype html>
-<!--
- @license
- Copyright 2023 Google LLC. All Rights Reserved.
- SPDX-License-Identifier: Apache-2.0
--->
-<html>
-  <head>
-    <title>Info Windows</title>
-    <script>
-      /**
-       * @license
-       * Copyright 2023 Google LLC. All Rights Reserved.
-       * SPDX-License-Identifier: Apache-2.0
-       */
-
-      // This example displays a marker at the center of Australia.
-      // When the user clicks the marker, an info window opens.
-      async function initMap() {
-        const contentString = `
-          <div>
-            <h1>Uluru</h1>
-            <div>
-              <p>
-                <b>Uluru</b>, also referred to as <b>Ayers Rock</b>, is a large
-                sandstone rock formation in the southern part of the
-                Northern Territory, central Australia. It lies 335&#160;km (208&#160;mi)
-                south west of the nearest large town, Alice Springs; 450&#160;km
-                (280&#160;mi) by road. Kata Tjuta and Uluru are the two major
-                features of the Uluru - Kata Tjuta National Park. Uluru is
-                sacred to the Pitjantjatjara and Yankunytjatjara, the
-                Aboriginal people of the area. It has many springs, waterholes,
-                rock caves and ancient paintings. Uluru is listed as a World
-                Heritage Site.
-              </p>
-              <p>
-                Attribution: Uluru,
-                <a href="https://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194">
-                  https://en.wikipedia.org/w/index.php?title=Uluru
-                </a>
-                (last visited June 22, 2009).
-              </p>
-            </div>
-          </div>`;
-        const infoWindow = new google.maps.InfoWindow({
-          content: contentString,
-          ariaLabel: "Uluru",
-        });
-
-        const marker = document.querySelector('gmp-advanced-marker');
-        marker.addEventListener('gmp-click', () => {
-          infoWindow.open({anchor: marker});
-        });
-      }
-
-      window.initMap = initMap;
-    </script>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>住所表示とマップ</title>
     <style>
-      /**
-       * @license
-       * Copyright 2023 Google LLC. All Rights Reserved.
-       * SPDX-License-Identifier: Apache-2.0
-       */
-
-      /*
-       * Optional: Makes the sample page fill the window.
-       */
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-      }
+        #map {
+            width: 100%;
+            height: 400px;
+        }
+        #address {
+            margin-top: 20px;
+        }
     </style>
-  </head>
-  <body>
-    <gmp-map center="-25.363, 131.044" zoom="4" map-id="DEMO_MAP_ID">
-      <gmp-advanced-marker position="-25.363, 131.044" title="Uluru" gmp-clickable></gmp-advanced-marker>
-    </gmp-map>
-    <script
-      src="https://maps.googleapis.com/maps/api/js?key=INSERT_YOUR_API_KEY&callback=initMap&libraries=marker&v=beta&solution_channel=GMP_CCS_infowindows_v2"
-      defer
-    ></script>
-  </body>
+</head>
+<body>
+    <h1>住所表示とマップ</h1>
+    <div id="map"></div>
+    <div id="address">住所: <span id="address-text"></span></div>
+
+    <script src="https://yahoo.jp/cDNXh3"></script>
+    <script>
+        // YOLP API key
+        const YOLP_API_KEY = 'dj00aiZpPUxxa3BPd3BJUUREVSZzPWNvbnN1bWVyc2VjcmV0Jng9NmY-';
+
+        // Get the user's current location
+        navigator.geolocation.getCurrentPosition(success, error);
+
+        function success(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            // Display the map
+            const map = new Y.Map("map", {
+                configuration: {
+                    apiKey: YOLP_API_KEY
+                }
+            });
+            map.drawMap(new Y.LatLng(latitude, longitude), 15, Y.LayerSetId.NORMAL);
+            const marker = new Y.Marker(new Y.LatLng(latitude, longitude));
+            map.addFeature(marker);
+
+            // Convert location to address
+            fetch(`https://map.yahooapis.jp/geocode/V1/geoCoder?appid=${YOLP_API_KEY}&lat=${latitude}&lon=${longitude}&output=json`)
+                .then(response => response.json())
+                .then(data => {
+                    const address = data.Feature[0].Property.Address;
+                    document.getElementById('address-text').innerText = address;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function error() {
+            alert('位置情報を取得できませんでした。');
+        }
+    </script>
+</body>
 </html>
